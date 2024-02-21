@@ -1,0 +1,31 @@
+@startuml C4-container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_LANDSCAPE()
+
+Person(user, "User", "Пользователь социальной сети")
+
+System_Boundary(social_network_service, "Социальная сеть") {
+    Container(main_service, "Main Service", "Go", "Регистрация и аутентификация пользователей, пользовательское API")
+    Container(stat_service, "Statistics Service", "Go", "Сервис лайков и просмотров")
+    Container(posts_service, "Post and Comments Service", "Go", "Сервис постов и комментариев")
+    ContainerDb(db_main_service, "Database", "Postgres", "Хранит пользователей")
+    ContainerDb(db_stat_service, "Database", "ClickHouse", "Хранит лайки и просмотры")
+    ContainerDb(db_posts_service, "Database", "Postgres", "Хранит посты и комментарии")
+    SystemQueue(stat_service_queue, "Message Broker", "Kafka", "", "")
+
+    Rel(main_service, db_main_service, "Читает/пишет пользователей")
+    Rel(posts_service, db_posts_service, "Читает/пишет посты")
+    Rel(stat_service, db_stat_service, "Читает/пишет лайки/просмотры")
+
+    Rel(main_service, stat_service, "Работа со статистикой", "gRPC")
+    Rel(main_service, posts_service, "Работа с постами и лентой", "gRPC")
+    Rel(main_service, stat_service_queue, "Пишет лайки/просмотры")
+    Rel(stat_service_queue, stat_service, "Читает лайки/просмотры")
+}
+
+Container(frontend, "Frontend", "")
+Rel(user, frontend, "Использует")
+Rel(frontend, main_service, "Вызов методов", "REST")
+
+@enduml

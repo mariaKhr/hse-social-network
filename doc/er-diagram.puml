@@ -1,0 +1,52 @@
+@startuml erd
+
+entity User {
+    *userId: integer primary_key
+    --
+    *username: varchar(50)
+    *email: varchar(100)
+    *password: varchar(100)
+}
+
+entity Post {
+    *postId: integer primary_key
+    --
+    *userId: integer
+    *content: text
+    *createdAt: datetime
+}
+
+entity Comment {
+    *commentId: integer primary_key
+    --
+    *postId: integer
+    *userId: integer
+    *content: text
+    *createdAt: datetime
+    replyCommentId: integer optional
+}
+
+entity Like { 
+    *likeId: integer primary_key
+    --
+    *postId: integer
+    *userId: integer
+}
+
+entity View { 
+    *viewId: integer primary_key
+    --
+    *postId: integer
+    *userId: integer
+}
+
+
+User ||--o{ Post
+User ||--o{ Comment
+User ||--o{ Like
+User ||--o{ View
+Post ||--o{ Comment
+Post ||--o{ Like
+Post ||--o{ View
+
+@enduml
