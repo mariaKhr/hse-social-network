@@ -1,0 +1,10 @@
+@startuml C4-context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User", "Пользователь социальной сети")
+
+System(social_network_service, "Социальная сеть")
+
+Rel(user, social_network_service, "Регистрируется, создаёт, обновляет и удаляет посты, получает стену с постами, ставит лайки и комментарии")
+
+@enduml
