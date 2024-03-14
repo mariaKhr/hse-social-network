@@ -23,3 +23,16 @@ services:
     ports:
       - 5432:5432
     restart: unless-stopped
+
+  tests:
+    build:
+      context: tests
+    environment:
+      MAIN_SERVICE_URL: "http://main-service:8090"
+      JWT_PRIVATE_KEY_FILE: "/tmp/signature.pem"
+      JWT_PUBLIC_KEY_FILE: "/tmp/signature.pub"
+    volumes:
+      - ./main-service/signature.pem:/tmp/signature.pem
+      - ./main-service/signature.pub:/tmp/signature.pub
+    depends_on:
+      - main-service
