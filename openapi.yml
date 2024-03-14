@@ -59,8 +59,6 @@ paths:
                 type: string
         '403':
           description: Invalid login/password supplied
-        '500':
-          description: Internal Server Error
   /signup:
     post:
       summary: Create user
@@ -79,8 +77,6 @@ paths:
                 type: string
         '403':
           description: User already exists
-        '500':
-          description: Internal Server Error
   /profile:
     post:
       summary: Update user information
@@ -97,7 +93,5 @@ paths:
           description: No cookie
         '400':
           description: Invalid cookie
-        '500':
-          description: Internal Server Error
       security:
         - cookieAuth: []
