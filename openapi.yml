@@ -1,0 +1,103 @@
+openapi: "3.0.0"
+info:
+  title: Social Network API
+  version: "1.0"
+components:
+  schemas:
+    UserInfo:
+      type: object
+      properties:
+        firstName:
+          type: string
+          example: "Ivan"
+        lastName:
+          type: string
+          example: "Ivanov"
+        birthdate:
+          type: string
+          format: YYYY-MM-DD
+          example: "2000-01-01"
+        email:
+          type: string
+          example: "iivanov@example.com"
+        phoneNumber:
+          type: string
+          example: "+71234567890"
+    UserCredentials:
+      type: object
+      properties:
+        login:
+          type: string
+          example: "user007"
+        password:
+          type: string
+          example: "qwerty"
+      required:
+        - login
+        - password
+  securitySchemes:
+    cookieAuth:            
+      type: apiKey
+      in: cookie
+      name: jwt
+paths:
+  /login:
+    post:
+      summary: Logs user into the system
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCredentials'
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            Set-Cookie:
+              description: JWT token
+              schema:
+                type: string
+        '403':
+          description: Invalid login/password supplied
+        '500':
+          description: Internal Server Error
+  /signup:
+    post:
+      summary: Create user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCredentials'
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            Set-Cookie:
+              description: JWT token
+              schema:
+                type: string
+        '403':
+          description: User already exists
+        '500':
+          description: Internal Server Error
+  /profile:
+    post:
+      summary: Update user information
+      description: This can only be done by the logged in user.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInfo'
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: No cookie
+        '400':
+          description: Invalid cookie
+        '500':
+          description: Internal Server Error
+      security:
+        - cookieAuth: []
