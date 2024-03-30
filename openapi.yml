@@ -2,6 +2,8 @@ openapi: "3.0.0"
 info:
   title: Social Network API
   version: "1.0"
+servers:
+  - url: https://localhost:8090
 components:
   schemas:
     UserInfo:
@@ -78,7 +80,7 @@ paths:
         '403':
           description: User already exists
   /profile:
-    post:
+    put:
       summary: Update user information
       description: This can only be done by the logged in user.
       requestBody:

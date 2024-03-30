@@ -34,6 +34,12 @@ func NewUserHandlers(jwtPublic *rsa.PublicKey, db *UsersDatabase) *UserHandlers 
 }
 
 func (h *UserHandlers) Profile(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPut {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "profile can be done only with PUT HTTP method")
+		return
+	}
+
 	claims, err := h.GetClaimsFromCookie(req)
 
 	var httpErr *HttpError

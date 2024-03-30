@@ -40,6 +40,12 @@ func NewAuthHandlers(jwtPrivate *rsa.PrivateKey, jwtPublic *rsa.PublicKey, db *U
 }
 
 func (h *AuthHandlers) Signup(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "signup can be done only with POST HTTP method")
+		return
+	}
+
 	creds, err := NewUserCredentials(req)
 
 	var httpErr *HttpError
@@ -84,6 +90,12 @@ func (h *AuthHandlers) Signup(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *AuthHandlers) Login(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "login can be done only with POST HTTP method")
+		return
+	}
+
 	creds, err := NewUserCredentials(req)
 
 	var httpErr *HttpError
