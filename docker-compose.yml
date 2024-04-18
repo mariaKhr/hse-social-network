@@ -1,29 +1,49 @@
 services:
   main-service:
-    build: 
+    build:
       context: main-service
     volumes:
-      - ./main-service/signature.pem:/tmp/signature.pem
-      - ./main-service/signature.pub:/tmp/signature.pub
+      - ./main-service/signature/signature.pem:/tmp/signature.pem
+      - ./main-service/signature/signature.pub:/tmp/signature.pub
     environment:
       JWT_PRIVATE_KEY_FILE: "/tmp/signature.pem"
       JWT_PUBLIC_KEY_FILE: "/tmp/signature.pub"
-      DATABASE_URL: "postgresql://postgres:soa@postgres:5432/postgres"
-    command: ["--port", "8090"]
+      DATABASE_URL: "postgresql://postgres:soa@main-service-db:5432/postgres"
+      POST_SERVER_ADDR: "post-service:50051"
+      PORT: 8090
     ports:
       - 8090:8090
     depends_on:
-      - postgres
+      - main-service-db
+      - post-service
     restart: unless-stopped
-
-  postgres:
+  main-service-db:
     image: postgres
     environment:
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: soa
-    ports:
-      - 5432:5432
     restart: unless-stopped
-
+    volumes:
+      - main-service-db-data:/var/lib/postgresql/data
+  post-service:
+    build: 
+      context: post-service
+    environment:
+      DATABASE_URL: "postgresql://postgres:soa@post-service-db:5432/postgres"
+      PORT: 50051
+    ports:
+      - 50051:50051
+    depends_on:
+      - post-service-db
+    restart: unless-stopped
+  post-service-db:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: soa
+    restart: unless-stopped
+    volumes:
+      - post-service-db-data:/var/lib/postgresql/data
   tests:
     build:
       context: tests
@@ -32,7 +52,11 @@ services:
       JWT_PRIVATE_KEY_FILE: "/tmp/signature.pem"
       JWT_PUBLIC_KEY_FILE: "/tmp/signature.pub"
     volumes:
-      - ./main-service/signature.pem:/tmp/signature.pem
-      - ./main-service/signature.pub:/tmp/signature.pub
+      - ./main-service/signature/signature.pem:/tmp/signature.pem
+      - ./main-service/signature/signature.pub:/tmp/signature.pub
     depends_on:
       - main-service
+      - post-service
+volumes:
+  main-service-db-data:
+  post-service-db-data:
