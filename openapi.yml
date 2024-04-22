@@ -3,7 +3,7 @@ info:
   title: Social Network API
   version: "1.0"
 servers:
-  - url: https://localhost:8090
+  - url: http://localhost:8090
 components:
   schemas:
     UserInfo:
@@ -37,13 +37,29 @@ components:
       required:
         - login
         - password
+    Post:
+      type: object
+      properties:
+        postID:
+          type: integer
+        userID:
+          type: integer
+        content:
+          type: string
+        createdAt:
+          type: timestamp
+    PostContent:
+      type: object
+      properties:
+        content:
+          type: string
   securitySchemes:
     cookieAuth:            
       type: apiKey
       in: cookie
       name: jwt
 paths:
-  /login:
+  /user/login:
     post:
       summary: Logs user into the system
       requestBody:
@@ -61,7 +77,7 @@ paths:
                 type: string
         '403':
           description: Invalid login/password supplied
-  /signup:
+  /user/signup:
     post:
       summary: Create user
       requestBody:
@@ -79,7 +95,7 @@ paths:
                 type: string
         '403':
           description: User already exists
-  /profile:
+  /user/profile:
     put:
       summary: Update user information
       description: This can only be done by the logged in user.
@@ -92,8 +108,113 @@ paths:
         '200':
           description: Successful operation
         '401':
-          description: No cookie
+          description: No cookie or invalid
+      security:
+        - cookieAuth: []
+  /post:
+    post:
+      summary: Create a new post 
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostContent'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+      security:
+        - cookieAuth: []
+  /post/{postId}:
+    get:
+      summary: Get post by id
+      description: This can only be done by the author of the post
+      parameters:
+        - name: postId
+          in: path
+          description: post id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
         '400':
-          description: Invalid cookie
+          description: Invalid user or post id
+      security:
+        - cookieAuth: []
+    put:
+      summary: Update post by id
+      description: This can only be done by the author of the post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostContent'
+      parameters:
+        - name: postId
+          in: path
+          description: post id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid user or post id
+      security:
+        - cookieAuth: []
+    delete:
+      summary: Delete post by id
+      description: This can only be done by the author of the post
+      parameters:
+        - name: postId
+          in: path
+          description: post id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid user or post id
+      security:
+        - cookieAuth: []
+  /post/page:
+    get:
+      summary: Get a list of user posts with pagination sorted by creation time
+      parameters:
+        - name: page
+          in: query
+          description: sequential number of the page
+          required: true
+          schema:
+            type: integer
+        - name: pageSize
+          in: query
+          description: number of posts per page
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '400':
+          description: Invalid user or post id
       security:
         - cookieAuth: []

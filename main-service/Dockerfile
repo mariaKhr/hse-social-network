@@ -1,12 +1,9 @@
 FROM golang:1.20-alpine
 
-WORKDIR /main-service
-COPY go.* .
+ADD . /go/src/main-service
 
-RUN go mod download -x
+WORKDIR /go/src/main-service
 
-COPY * .
+RUN go get main-service && go install
 
-RUN go build .
-
-ENTRYPOINT ["./main-service"]
+ENTRYPOINT ["/go/bin/main-service"]

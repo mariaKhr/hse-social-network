@@ -12,6 +12,11 @@ import requests
 
 LOGGER = logging.getLogger(__name__)
 
+LOGIN_HANDLER = "/user/login"
+SIGNUP_HANDLER = "/user/signup"
+PROFILE_HANDLER = "/user/profile"
+POST_HANDLER = "/post"
+POST_PAGE_HANDLER = "/post/page"
 
 def wait_for_socket(host, port):
     retries = 10
@@ -85,7 +90,7 @@ def make_user(main_service_addr):
     r = make_requests(
         'POST',
         main_service_addr,
-        '/signup',
+        SIGNUP_HANDLER,
         data={
             'login': login,
             'password': password})
@@ -94,18 +99,34 @@ def make_user(main_service_addr):
     return ((login, password), cookies)
 
 
+def make_post(main_service_addr, user):
+    ((_, _), cookies) = user
+    r = make_requests(
+        'POST',
+        main_service_addr,
+        POST_HANDLER,
+        data={
+            'content': str(uuid.uuid4()),
+        },
+        cookies=cookies
+    )
+    assert r.status_code == 200
+    return r.json()
+
+
 @pytest.fixture
 def user(main_service_addr):
     yield make_user(main_service_addr)
 
 
 @pytest.fixture
-def another_user(main_service_addr):
-    yield make_user(main_service_addr)
+def user_with_post(main_service_addr):
+    user = make_user(main_service_addr)
+    yield user, make_post(main_service_addr, user)
 
 
 def generate_jwt(private, id):
-    return jwt.encode({'id': id}, private, 'RS256')
+    return jwt.encode({'userID': id}, private, 'RS256')
 
 
 def parse_jwt(token, public):
@@ -113,7 +134,7 @@ def parse_jwt(token, public):
 
 
 def generate_hs256_jwt(secret, id):
-    return jwt.encode({'id': id}, secret, 'HS256')
+    return jwt.encode({'userID': id}, secret, 'HS256')
 
 
 class TestRSA:
@@ -125,7 +146,7 @@ class TestRSA:
     def test_public(jwt_private, jwt_public):
         token = generate_jwt(jwt_private, 12345)
         decoded = parse_jwt(token, jwt_public)
-        assert decoded['id'] == 12345
+        assert decoded['userID'] == 12345
 
 
 class TestAuth:
@@ -136,7 +157,7 @@ class TestAuth:
         r = make_requests(
             'POST',
             main_service_addr,
-            '/signup',
+            SIGNUP_HANDLER,
             data={
                 'login': login,
                 'password': password})
@@ -149,7 +170,7 @@ class TestAuth:
         r = make_requests(
             'POST',
             main_service_addr,
-            '/signup',
+            SIGNUP_HANDLER,
             data={
                 'login': login,
                 'password': password})
@@ -162,7 +183,7 @@ class TestAuth:
         r = make_requests(
             'POST',
             main_service_addr,
-            '/login',
+            LOGIN_HANDLER,
             data={
                 'login': login,
                 'password': password})
@@ -175,7 +196,7 @@ class TestAuth:
         r = make_requests(
             'POST',
             main_service_addr,
-            '/login',
+            LOGIN_HANDLER,
             data={
                 'login': login,
                 'password': password})
@@ -189,7 +210,7 @@ class TestAuth:
         r = make_requests(
             'POST',
             main_service_addr,
-            '/login',
+            LOGIN_HANDLER,
             data={
                 'login': login,
                 'password': password})
@@ -201,9 +222,9 @@ class TestUser:
     def test_profile(main_service_addr, user):
         ((_, _), cookies) = user
         r = make_requests(
-            'POST',
+            'PUT',
             main_service_addr,
-            '/profile',
+            PROFILE_HANDLER,
             data={
                 'firstName': str(uuid.uuid4()),
                 'lastName': str(uuid.uuid4()),
@@ -216,9 +237,9 @@ class TestUser:
     @staticmethod
     def test_profile_with_wrong_cookie(main_service_addr):
         r = make_requests(
-            'POST',
+            'PUT',
             main_service_addr,
-            '/profile',
+            PROFILE_HANDLER,
             data={
                 'firstName': str(uuid.uuid4()),
                 'lastName': str(uuid.uuid4()),
@@ -226,4 +247,116 @@ class TestUser:
                 'email': str(uuid.uuid4()),
                 'phoneNumber': str(uuid.uuid4())},
             cookies={'jwt': 'not jwt'})
-        assert r.status_code == 400
+        assert r.status_code == 401
+
+class TestPost:
+    @staticmethod
+    def test_create_post(main_service_addr, user):
+        make_post(main_service_addr, user)
+
+    @staticmethod
+    def test_get_post(main_service_addr, user_with_post):
+        (user, post) = user_with_post
+        ((_, _), cookies) = user
+        new_content = str(uuid.uuid4())
+        r = make_requests(
+            'GET',
+            main_service_addr,
+            POST_HANDLER + "/" + str(post['postID']),
+            data={
+                'content': new_content,
+            },
+            cookies=cookies
+        )
+        assert r.status_code == 200
+        assert r.json() == post
+
+    @staticmethod
+    def test_update_post(main_service_addr, user_with_post):
+        (user, post) = user_with_post
+        ((_, _), cookies) = user
+        new_content = str(uuid.uuid4())
+        r = make_requests(
+            'PUT',
+            main_service_addr,
+            POST_HANDLER + "/" + str(post['postID']),
+            data={
+                'content': new_content,
+            },
+            cookies=cookies
+        )
+        assert r.status_code == 200
+        assert r.json()['postID'] == post['postID']
+        assert r.json()['userID'] == post['userID']
+        assert r.json()['content'] == new_content
+        assert r.json()['createdAt'] == post['createdAt']
+
+    @staticmethod
+    def test_delete_post(main_service_addr, user_with_post):
+        (user, post) = user_with_post
+        ((_, _), cookies) = user
+        new_content = str(uuid.uuid4())
+        r = make_requests(
+            'DELETE',
+            main_service_addr,
+            POST_HANDLER + "/" + str(post['postID']),
+            data={
+                'content': new_content,
+            },
+            cookies=cookies
+        )
+        assert r.status_code == 200
+
+    @staticmethod
+    def test_get_page(main_service_addr, user):
+        posts = []
+        for _ in range(6):
+            post = make_post(main_service_addr, user)
+            posts.append(post)
+
+        ((_, _), cookies) = user
+        r = make_requests(
+            'GET',
+            main_service_addr,
+            POST_PAGE_HANDLER,
+            params={
+                'page': 0,
+                'pageSize': 5,
+            },
+            cookies=cookies
+        )
+        assert r.status_code == 200
+        assert len(r.json()['posts']) == 5
+        received = r.json()['posts']
+
+        r = make_requests(
+            'GET',
+            main_service_addr,
+            POST_PAGE_HANDLER,
+            params={
+                'page': 1,
+                'pageSize': 5,
+            },
+            cookies=cookies
+        )
+        assert r.status_code == 200
+        assert len(r.json()['posts']) == 1
+        received += r.json()['posts']
+        for i, post in enumerate(reversed(received)):
+            assert post == posts[i]
+
+    @staticmethod
+    def test_no_access(main_service_addr, user_with_post):
+        (_, post) = user_with_post
+        ((_, _), cookies) = make_user(main_service_addr)
+        new_content = str(uuid.uuid4())
+        r = make_requests(
+            'DELETE',
+            main_service_addr,
+            POST_HANDLER + "/" + str(post['postID']),
+            data={
+                'content': new_content,
+            },
+            cookies=cookies
+        )
+        assert r.status_code == 403
