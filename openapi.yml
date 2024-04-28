@@ -131,7 +131,6 @@ paths:
   /post/{postId}:
     get:
       summary: Get post by id
-      description: This can only be done by the author of the post
       parameters:
         - name: postId
           in: path
@@ -147,7 +146,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Post'
         '400':
-          description: Invalid user or post id
+          description: Invalid post id
       security:
         - cookieAuth: []
     put:
@@ -205,6 +204,12 @@ paths:
           required: true
           schema:
             type: integer
+        - name: userId
+          in: query
+          description: user id
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
           description: Successful operation
@@ -215,6 +220,40 @@ paths:
                 items:
                   $ref: '#/components/schemas/Post'
         '400':
-          description: Invalid user or post id
+          description: Invalid post id
+      security:
+        - cookieAuth: []
+  /like/{postId}:
+    post:
+      summary: Like post by id
+      parameters:
+        - name: postId
+          in: path
+          description: post id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid post id
+      security:
+        - cookieAuth: []
+  /view/{postId}:
+    post:
+      summary: View post by id
+      parameters:
+        - name: postId
+          in: path
+          description: post id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid post id
       security:
         - cookieAuth: []

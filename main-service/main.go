@@ -5,6 +5,7 @@ import (
 	"main-service/db"
 	"main-service/handlers"
 	jwtkeys "main-service/jwt"
+	kafka "main-service/kafka_producer"
 	"os"
 
 	grpcclient "main-service/grpc_client"
@@ -20,6 +21,8 @@ func main() {
 	db.CreateTable()
 
 	grpcclient.InitGRPCClient()
+	kafka.InitKafkaProducer()
+	defer kafka.CloseKafkaProducer()
 
 	router := gin.Default()
 
@@ -38,6 +41,9 @@ func main() {
 		post.DELETE("/:id", handlers.CheckAuth, handlers.DeletePost)
 		post.GET("/page", handlers.CheckAuth, handlers.GetPage)
 	}
+
+	router.POST("/like/:id", handlers.CheckAuth, handlers.LikePost)
+	router.POST("/view/:id", handlers.CheckAuth, handlers.ViewPost)
 
 	router.Run(fmt.Sprintf(":%s", os.Getenv("PORT")))
 }

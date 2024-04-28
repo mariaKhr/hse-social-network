@@ -100,6 +100,13 @@ func GetPage(c *gin.Context) {
 		return
 	}
 
+	userIDQuery, ok := c.GetQuery("userId")
+	if !ok {
+		c.Status(http.StatusBadRequest)
+		c.Writer.WriteString("no userId in query")
+		return
+	}
+
 	page, err := strconv.Atoi(pageQuery)
 	if err != nil {
 		c.Status(http.StatusBadRequest)
@@ -114,8 +121,15 @@ func GetPage(c *gin.Context) {
 		return
 	}
 
+	userID, err := strconv.Atoi(userIDQuery)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		c.Writer.WriteString(err.Error())
+		return
+	}
+
 	getPostsReq := pb.GetPostsRequest{
-		UserID:   getUserID(c),
+		UserID:   uint64(userID),
 		Page:     uint32(page),
 		PageSize: uint32(pageSize),
 	}
