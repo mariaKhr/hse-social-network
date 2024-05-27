@@ -20,7 +20,7 @@ func main() {
 	defer db.CloseDB()
 	db.CreateTable()
 
-	grpcclient.InitGRPCClient()
+	grpcclient.InitGRPCClients()
 	kafka.InitKafkaProducer()
 	defer kafka.CloseKafkaProducer()
 
@@ -44,6 +44,13 @@ func main() {
 
 	router.POST("/like/:id", handlers.CheckAuth, handlers.LikePost)
 	router.POST("/view/:id", handlers.CheckAuth, handlers.ViewPost)
+
+	stat := router.Group("/stat")
+	{
+		stat.GET("/:id", handlers.CheckAuth, handlers.GetStatisticsByPost)
+		stat.GET("/top5posts", handlers.CheckAuth, handlers.GetTop5Posts)
+		stat.GET("/top3users", handlers.CheckAuth, handlers.GetTop3Users)
+	}
 
 	router.Run(fmt.Sprintf(":%s", os.Getenv("PORT")))
 }

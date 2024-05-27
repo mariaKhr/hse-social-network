@@ -24,6 +24,7 @@ func InitDB() {
 	CREATE TABLE IF NOT EXISTS likes(
 		post_id    INT NOT NULL,
 		user_id    INT NOT NULL,
+		author_id  INT NOT NULL,
 		PRIMARY KEY (post_id, user_id)
 	) engine=ReplacingMergeTree`)
 	if err != nil {
@@ -34,6 +35,7 @@ func InitDB() {
 	CREATE TABLE IF NOT EXISTS views(
 		post_id    INT NOT NULL,
 		user_id    INT NOT NULL,
+		author_id  INT NOT NULL,
 		PRIMARY KEY (post_id, user_id)
 	) engine=ReplacingMergeTree`)
 	if err != nil {

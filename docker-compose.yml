@@ -10,6 +10,7 @@ services:
       JWT_PUBLIC_KEY_FILE: "/tmp/signature.pub"
       DATABASE_URL: "postgresql://postgres:soa@main-service-db:5432/postgres"
       POST_SERVER_ADDR: "post-service:50051"
+      STATISTICS_SERVER_ADDR: "statistic-service:8100"
       KAFKA_URL: "kafka:9092"
       PORT: 8090
     ports:
@@ -57,7 +58,8 @@ services:
     environment:
       DATABASE_URL: "http://statistic-service-db:8123"
       KAFKA_URL: kafka:9092
-      PORT: 8100
+      GRPC_PORT: 8100
+      HTTP_PORT: 8101
     depends_on:
       - statistic-service-db
       - kafka
@@ -71,6 +73,8 @@ services:
     ports:
       - 9000:9000
       - 8123:8123
+    volumes:
+      - statistic-service-db-data:/var/lib/clickhouse
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest

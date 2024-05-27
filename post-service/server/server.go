@@ -50,7 +50,7 @@ func (s *PostServer) UpdatePost(ctx context.Context, req *pb.UpdatePostRequest) 
 	return selectPostByID(req.PostID)
 }
 
-func (s *PostServer) DeletePost(ctx context.Context, req *pb.PostCreds) (*empty.Empty, error) {
+func (s *PostServer) DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*empty.Empty, error) {
 	if err := s.validateUser(req.PostID, req.UserID); err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (s *PostServer) DeletePost(ctx context.Context, req *pb.PostCreds) (*empty.
 	return &emptypb.Empty{}, nil
 }
 
-func (s *PostServer) GetPost(ctx context.Context, req *pb.PostCreds) (*pb.Post, error) {
+func (s *PostServer) GetPost(ctx context.Context, req *pb.GetPostRequest) (*pb.Post, error) {
 	return selectPostByID(req.PostID)
 }
 

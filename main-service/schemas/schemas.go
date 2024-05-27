@@ -17,6 +17,7 @@ type User struct {
 }
 
 type KafkaMessage struct {
-	UserID uint64 `json:"userID"`
-	PostID uint64 `json:"postID"`
+	UserID   uint64 `json:"userID"`
+	PostID   uint64 `json:"postID"`
+	AuthorID uint64 `json:"authorID"`
 }
