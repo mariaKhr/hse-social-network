@@ -17,6 +17,8 @@ SIGNUP_HANDLER = "/user/signup"
 PROFILE_HANDLER = "/user/profile"
 POST_HANDLER = "/post"
 POST_PAGE_HANDLER = "/post/page"
+LIKE_HANDLER = "/like"
+VIEW_HANDLER = "/view"
 
 def wait_for_socket(host, port):
     retries = 10
@@ -315,6 +317,7 @@ class TestPost:
             posts.append(post)
 
         ((_, _), cookies) = user
+        userId = posts[0]['userID']
         r = make_requests(
             'GET',
             main_service_addr,
@@ -322,6 +325,7 @@ class TestPost:
             params={
                 'page': 0,
                 'pageSize': 5,
+                'userId': userId,
             },
             cookies=cookies
         )
@@ -336,6 +340,7 @@ class TestPost:
             params={
                 'page': 1,
                 'pageSize': 5,
+                'userId': userId,
             },
             cookies=cookies
         )
@@ -360,3 +365,36 @@ class TestPost:
             cookies=cookies
         )
         assert r.status_code == 403
+
+class TestStatistics:
+    @staticmethod
+    def test_like(main_service_addr, user_with_post):
+        (_, post) = user_with_post
+
+        for _ in range(5):
+            new_user = make_user(main_service_addr)
+            ((_, _), cookies) = new_user
+
+            r = make_requests(
+                'POST',
+                main_service_addr,
+                LIKE_HANDLER + "/" + str(post['postID']),
+                cookies=cookies
+            )
+            assert r.status_code == 200
+
+    @staticmethod
+    def test_view(main_service_addr, user_with_post):
+        (_, post) = user_with_post
+
+        for _ in range(5):
+            new_user = make_user(main_service_addr)
+            ((_, _), cookies) = new_user
+
+            r = make_requests(
+                'POST',
+                main_service_addr,
+                VIEW_HANDLER + "/" + str(post['postID']),
+                cookies=cookies
+            )
+            assert r.status_code == 200

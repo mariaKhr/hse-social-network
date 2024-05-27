@@ -10,13 +10,17 @@ services:
       JWT_PUBLIC_KEY_FILE: "/tmp/signature.pub"
       DATABASE_URL: "postgresql://postgres:soa@main-service-db:5432/postgres"
       POST_SERVER_ADDR: "post-service:50051"
+      KAFKA_URL: "kafka:9092"
       PORT: 8090
     ports:
       - 8090:8090
     depends_on:
       - main-service-db
       - post-service
+      - statistic-service
+      - kafka
     restart: unless-stopped
+
   main-service-db:
     image: postgres
     environment:
@@ -25,6 +29,7 @@ services:
     restart: unless-stopped
     volumes:
       - main-service-db-data:/var/lib/postgresql/data
+
   post-service:
     build: 
       context: post-service
@@ -36,6 +41,7 @@ services:
     depends_on:
       - post-service-db
     restart: unless-stopped
+
   post-service-db:
     image: postgres
     environment:
@@ -44,6 +50,47 @@ services:
     restart: unless-stopped
     volumes:
       - post-service-db-data:/var/lib/postgresql/data
+
+  statistic-service:
+    build: 
+      context: statistic-service
+    environment:
+      DATABASE_URL: "http://statistic-service-db:8123"
+      KAFKA_URL: kafka:9092
+      PORT: 8100
+    depends_on:
+      - statistic-service-db
+      - kafka
+    restart: unless-stopped
+    ports:
+      - 8100:8100
+
+  statistic-service-db:
+    image: yandex/clickhouse-server:latest
+    restart: unless-stopped
+    ports:
+      - 9000:9000
+      - 8123:8123
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+    ports:
+      - 2181:2181
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_BROKER_ID=1
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    ports:
+      - 9092:9092
+
   tests:
     build:
       context: tests
@@ -56,7 +103,8 @@ services:
       - ./main-service/signature/signature.pub:/tmp/signature.pub
     depends_on:
       - main-service
-      - post-service
+
 volumes:
   main-service-db-data:
   post-service-db-data:
+  statistic-service-db-data:

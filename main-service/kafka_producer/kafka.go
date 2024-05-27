@@ -11,7 +11,9 @@ var KafkaProducer sarama.SyncProducer
 
 func InitKafkaProducer() {
 	var err error
-	KafkaProducer, err = sarama.NewSyncProducer([]string{os.Getenv("KAFKA_URL")}, nil)
+	config := sarama.NewConfig()
+	config.Producer.Return.Successes = true
+	KafkaProducer, err = sarama.NewSyncProducer([]string{os.Getenv("KAFKA_URL")}, config)
 	if err != nil {
 		log.Fatalf("Failed to create kafka producer: %v", err)
 	}
