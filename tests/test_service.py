@@ -17,9 +17,6 @@ SIGNUP_HANDLER = "/user/signup"
 PROFILE_HANDLER = "/user/profile"
 POST_HANDLER = "/post"
 POST_PAGE_HANDLER = "/post/page"
-LIKE_HANDLER = "/like"
-VIEW_HANDLER = "/view"
-STAT_HANDLER = "/stat"
 TOP3_USERS_HANDLER = "/stat/top3users"
 TOP5_POSTS_HANDLER = "/stat/top5posts"
 
@@ -382,7 +379,7 @@ class TestStatistics:
                 r = make_requests(
                     'POST',
                     main_service_addr,
-                    LIKE_HANDLER + "/" + str(post['postID']),
+                    '/post/' + str(post['postID']) + '/like',
                     cookies=cookies
                 )
                 assert r.status_code == 200
@@ -392,7 +389,7 @@ class TestStatistics:
         r = make_requests(
             'GET',
             main_service_addr,
-            STAT_HANDLER + "/" + str(post['postID']),
+            '/post/' + str(post['postID']) + '/stat',
             cookies=cookies
         )
         assert r.status_code == 200
@@ -412,7 +409,7 @@ class TestStatistics:
                 r = make_requests(
                     'POST',
                     main_service_addr,
-                    VIEW_HANDLER + "/" + str(post['postID']),
+                    '/post/' + str(post['postID']) + '/view',
                     cookies=cookies
                 )
                 assert r.status_code == 200
@@ -422,7 +419,7 @@ class TestStatistics:
         r = make_requests(
             'GET',
             main_service_addr,
-            STAT_HANDLER + "/" + str(post['postID']),
+            '/post/' + str(post['postID']) + '/stat',
             cookies=cookies
         )
         assert r.status_code == 200

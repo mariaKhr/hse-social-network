@@ -223,7 +223,7 @@ paths:
           description: Invalid post id
       security:
         - cookieAuth: []
-  /like/{postId}:
+  /post/{postId}/like:
     post:
       summary: Like post by id
       parameters:
@@ -240,7 +240,7 @@ paths:
           description: Invalid post id
       security:
         - cookieAuth: []
-  /view/{postId}:
+  /post/{postId}/view:
     post:
       summary: View post by id
       parameters:
@@ -257,7 +257,7 @@ paths:
           description: Invalid post id
       security:
         - cookieAuth: []
-  /stat/{postId}:
+  /post/{postId}/stat:
     get:
       summary: Get likes and views by post id
       parameters:

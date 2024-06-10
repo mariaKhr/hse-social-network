@@ -40,14 +40,13 @@ func main() {
 		post.GET("/:id", handlers.CheckAuth, handlers.GetPost)
 		post.DELETE("/:id", handlers.CheckAuth, handlers.DeletePost)
 		post.GET("/page", handlers.CheckAuth, handlers.GetPage)
+		post.POST("/:id/like", handlers.CheckAuth, handlers.LikePost)
+		post.POST("/:id/view", handlers.CheckAuth, handlers.ViewPost)
+		post.GET("/:id/stat", handlers.CheckAuth, handlers.GetStatisticsByPost)
 	}
-
-	router.POST("/like/:id", handlers.CheckAuth, handlers.LikePost)
-	router.POST("/view/:id", handlers.CheckAuth, handlers.ViewPost)
 
 	stat := router.Group("/stat")
 	{
-		stat.GET("/:id", handlers.CheckAuth, handlers.GetStatisticsByPost)
 		stat.GET("/top5posts", handlers.CheckAuth, handlers.GetTop5Posts)
 		stat.GET("/top3users", handlers.CheckAuth, handlers.GetTop3Users)
 	}
