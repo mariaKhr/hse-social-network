@@ -50,7 +50,7 @@ func (s *PostServer) UpdatePost(ctx context.Context, req *pb.UpdatePostRequest) 
 	return selectPostByID(req.PostID)
 }
 
-func (s *PostServer) DeletePost(ctx context.Context, req *pb.PostCreds) (*empty.Empty, error) {
+func (s *PostServer) DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*empty.Empty, error) {
 	if err := s.validateUser(req.PostID, req.UserID); err != nil {
 		return nil, err
 	}
@@ -65,11 +65,7 @@ func (s *PostServer) DeletePost(ctx context.Context, req *pb.PostCreds) (*empty.
 	return &emptypb.Empty{}, nil
 }
 
-func (s *PostServer) GetPost(ctx context.Context, req *pb.PostCreds) (*pb.Post, error) {
-	err := s.validateUser(req.PostID, req.UserID)
-	if err != nil {
-		return nil, err
-	}
+func (s *PostServer) GetPost(ctx context.Context, req *pb.GetPostRequest) (*pb.Post, error) {
 	return selectPostByID(req.PostID)
 }
 
@@ -84,6 +80,9 @@ func (s *PostServer) GetPosts(ctx context.Context, req *pb.GetPostsRequest) (*pb
 		req.UserID,
 		req.PageSize,
 		req.Page*req.PageSize)
+	if err == pgx.ErrNoRows {
+		return &pb.Posts{}, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +136,7 @@ func selectPostByID(postID uint64) (*pb.Post, error) {
 		"SELECT user_id, content, created_at FROM posts WHERE post_id=$1",
 		postID).Scan(&userID, &content, &createdAt)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.NotFound, "invalid post id")
 	}
 
 	return &pb.Post{

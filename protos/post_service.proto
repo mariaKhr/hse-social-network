@@ -2,15 +2,15 @@ syntax = "proto3";
 
 package protos;
 
-option go_package = "/;postservice";
+option go_package = "/;protos";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 service PostService {
     rpc CreatePost (CreatePostRequest) returns (Post) {}
     rpc UpdatePost (UpdatePostRequest) returns (Post) {}
-    rpc DeletePost (PostCreds) returns (google.protobuf.Empty) {}
-    rpc GetPost (PostCreds) returns (Post) {}
+    rpc DeletePost (DeletePostRequest) returns (google.protobuf.Empty) {}
+    rpc GetPost (GetPostRequest) returns (Post) {}
     rpc GetPosts (GetPostsRequest) returns (Posts) {}
 }
 
@@ -31,7 +31,11 @@ message GetPostsRequest {
     uint32 pageSize = 3;
 }
 
-message PostCreds {
+message GetPostRequest {
+    uint64 postID = 1;
+}
+
+message DeletePostRequest {
     uint64 postID = 1;
     uint64 userID = 2;
 }

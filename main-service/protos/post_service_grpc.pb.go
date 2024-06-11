@@ -4,7 +4,7 @@
 // - protoc             v3.6.1
 // source: protos/post_service.proto
 
-package postservice
+package protos
 
 import (
 	context "context"
@@ -25,8 +25,8 @@ const _ = grpc.SupportPackageIsVersion7
 type PostServiceClient interface {
 	CreatePost(ctx context.Context, in *CreatePostRequest, opts ...grpc.CallOption) (*Post, error)
 	UpdatePost(ctx context.Context, in *UpdatePostRequest, opts ...grpc.CallOption) (*Post, error)
-	DeletePost(ctx context.Context, in *PostCreds, opts ...grpc.CallOption) (*empty.Empty, error)
-	GetPost(ctx context.Context, in *PostCreds, opts ...grpc.CallOption) (*Post, error)
+	DeletePost(ctx context.Context, in *DeletePostRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	GetPost(ctx context.Context, in *GetPostRequest, opts ...grpc.CallOption) (*Post, error)
 	GetPosts(ctx context.Context, in *GetPostsRequest, opts ...grpc.CallOption) (*Posts, error)
 }
 
@@ -56,7 +56,7 @@ func (c *postServiceClient) UpdatePost(ctx context.Context, in *UpdatePostReques
 	return out, nil
 }
 
-func (c *postServiceClient) DeletePost(ctx context.Context, in *PostCreds, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *postServiceClient) DeletePost(ctx context.Context, in *DeletePostRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/protos.PostService/DeletePost", in, out, opts...)
 	if err != nil {
@@ -65,7 +65,7 @@ func (c *postServiceClient) DeletePost(ctx context.Context, in *PostCreds, opts 
 	return out, nil
 }
 
-func (c *postServiceClient) GetPost(ctx context.Context, in *PostCreds, opts ...grpc.CallOption) (*Post, error) {
+func (c *postServiceClient) GetPost(ctx context.Context, in *GetPostRequest, opts ...grpc.CallOption) (*Post, error) {
 	out := new(Post)
 	err := c.cc.Invoke(ctx, "/protos.PostService/GetPost", in, out, opts...)
 	if err != nil {
@@ -89,8 +89,8 @@ func (c *postServiceClient) GetPosts(ctx context.Context, in *GetPostsRequest, o
 type PostServiceServer interface {
 	CreatePost(context.Context, *CreatePostRequest) (*Post, error)
 	UpdatePost(context.Context, *UpdatePostRequest) (*Post, error)
-	DeletePost(context.Context, *PostCreds) (*empty.Empty, error)
-	GetPost(context.Context, *PostCreds) (*Post, error)
+	DeletePost(context.Context, *DeletePostRequest) (*empty.Empty, error)
+	GetPost(context.Context, *GetPostRequest) (*Post, error)
 	GetPosts(context.Context, *GetPostsRequest) (*Posts, error)
 	mustEmbedUnimplementedPostServiceServer()
 }
@@ -105,10 +105,10 @@ func (UnimplementedPostServiceServer) CreatePost(context.Context, *CreatePostReq
 func (UnimplementedPostServiceServer) UpdatePost(context.Context, *UpdatePostRequest) (*Post, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdatePost not implemented")
 }
-func (UnimplementedPostServiceServer) DeletePost(context.Context, *PostCreds) (*empty.Empty, error) {
+func (UnimplementedPostServiceServer) DeletePost(context.Context, *DeletePostRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeletePost not implemented")
 }
-func (UnimplementedPostServiceServer) GetPost(context.Context, *PostCreds) (*Post, error) {
+func (UnimplementedPostServiceServer) GetPost(context.Context, *GetPostRequest) (*Post, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPost not implemented")
 }
 func (UnimplementedPostServiceServer) GetPosts(context.Context, *GetPostsRequest) (*Posts, error) {
@@ -164,7 +164,7 @@ func _PostService_UpdatePost_Handler(srv interface{}, ctx context.Context, dec f
 }
 
 func _PostService_DeletePost_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PostCreds)
+	in := new(DeletePostRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -176,13 +176,13 @@ func _PostService_DeletePost_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/protos.PostService/DeletePost",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PostServiceServer).DeletePost(ctx, req.(*PostCreds))
+		return srv.(PostServiceServer).DeletePost(ctx, req.(*DeletePostRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _PostService_GetPost_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PostCreds)
+	in := new(GetPostRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -194,7 +194,7 @@ func _PostService_GetPost_Handler(srv interface{}, ctx context.Context, dec func
 		FullMethod: "/protos.PostService/GetPost",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PostServiceServer).GetPost(ctx, req.(*PostCreds))
+		return srv.(PostServiceServer).GetPost(ctx, req.(*GetPostRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package protos;
+
+option go_package = "/;protos";
+import "google/protobuf/empty.proto";
+
+service StatisticService {
+    rpc GetStatistics (GetStatisticsRequest) returns (GetStatisticsResponse) {}
+    rpc GetTop5Posts (GetTop5PostsRequest) returns (GetTop5PostsResponse) {}
+    rpc GetTop3UsersByLikes (google.protobuf.Empty) returns (GetTop3UsersByLikesResponse) {}
+}
+
+message GetStatisticsRequest {
+    uint64 postID = 1;
+}
+
+enum Comparator {
+    LIKES = 0;
+    VIEWS = 1;
+}
+
+message GetTop5PostsRequest {
+    Comparator comparator = 1;
+}
+
+message GetTop5PostsResponse {
+    message Stat {
+        uint64 postID = 1;
+        uint64 userID = 2;
+        uint64 num = 3;
+    }
+    repeated Stat stats = 1;
+}
+
+message GetStatisticsResponse {
+    uint64 postID = 1;
+    uint64 userID = 2;
+    uint64 numLikes = 3;
+    uint64 numViews = 4;
+}
+
+message GetTop3UsersByLikesResponse {
+    message Stat {
+        uint64 userID = 1;
+        uint64 numLikes = 2;
+    }
+    repeated Stat stats = 1;
+}

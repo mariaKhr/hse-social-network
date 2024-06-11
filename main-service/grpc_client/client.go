@@ -9,12 +9,19 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var GRPCClient pb.PostServiceClient
+var PostService pb.PostServiceClient
+var StatService pb.StatisticServiceClient
 
-func InitGRPCClient() {
-	conn, err := grpc.Dial(os.Getenv("POST_SERVER_ADDR"), grpc.WithTransportCredentials(insecure.NewCredentials()))
+func InitGRPCClients() {
+	postServiceConn, err := grpc.Dial(os.Getenv("POST_SERVER_ADDR"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatal(err)
 	}
-	GRPCClient = pb.NewPostServiceClient(conn)
+	PostService = pb.NewPostServiceClient(postServiceConn)
+
+	statServiceConn, err := grpc.Dial(os.Getenv("STATISTICS_SERVER_ADDR"), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatal(err)
+	}
+	StatService = pb.NewStatisticServiceClient(statServiceConn)
 }

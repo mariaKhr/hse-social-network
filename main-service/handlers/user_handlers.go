@@ -123,6 +123,18 @@ func selectUserByLogin(login string) (uint64, string, error) {
 	return userID, passwordHash, nil
 }
 
+func selectLoginByID(userID uint64) (string, error) {
+	var login string
+	err := db.Pool.QueryRow(
+		context.Background(),
+		"SELECT login FROM users WHERE id=$1",
+		userID).Scan(&login)
+	if err != nil {
+		return "", err
+	}
+	return login, nil
+}
+
 func insertUserCreds(creds schemas.UserCredentials) error {
 	_, err := db.Pool.Exec(
 		context.Background(),

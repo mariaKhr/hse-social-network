@@ -15,3 +15,9 @@ type User struct {
 	Email        string `json:"email,omitempty"`
 	PhoneNumber  string `json:"phoneNumber,omitempty"`
 }
+
+type KafkaMessage struct {
+	UserID   uint64 `json:"userID"`
+	PostID   uint64 `json:"postID"`
+	AuthorID uint64 `json:"authorID"`
+}

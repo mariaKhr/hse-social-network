@@ -23,7 +23,7 @@ func CreatePost(c *gin.Context) {
 
 	createPostReq.UserID = getUserID(c)
 
-	resp, err := grpcclient.GRPCClient.CreatePost(context.Background(), &createPostReq)
+	resp, err := grpcclient.PostService.CreatePost(context.Background(), &createPostReq)
 	processServerResponse(c, err, resp)
 }
 
@@ -47,7 +47,7 @@ func UpdatePost(c *gin.Context) {
 
 	updatePostReq.UserID = getUserID(c)
 
-	resp, err := grpcclient.GRPCClient.UpdatePost(context.Background(), &updatePostReq)
+	resp, err := grpcclient.PostService.UpdatePost(context.Background(), &updatePostReq)
 	processServerResponse(c, err, resp)
 }
 
@@ -59,12 +59,12 @@ func DeletePost(c *gin.Context) {
 		return
 	}
 
-	deletePostReq := pb.PostCreds{
+	deletePostReq := pb.DeletePostRequest{
 		UserID: getUserID(c),
 		PostID: uint64(postId),
 	}
 
-	resp, err := grpcclient.GRPCClient.DeletePost(context.Background(), &deletePostReq)
+	resp, err := grpcclient.PostService.DeletePost(context.Background(), &deletePostReq)
 	processServerResponse(c, err, resp)
 }
 
@@ -76,12 +76,11 @@ func GetPost(c *gin.Context) {
 		return
 	}
 
-	getPostReq := pb.PostCreds{
-		UserID: getUserID(c),
+	getPostReq := pb.GetPostRequest{
 		PostID: uint64(postId),
 	}
 
-	resp, err := grpcclient.GRPCClient.GetPost(context.Background(), &getPostReq)
+	resp, err := grpcclient.PostService.GetPost(context.Background(), &getPostReq)
 	processServerResponse(c, err, resp)
 }
 
@@ -100,6 +99,13 @@ func GetPage(c *gin.Context) {
 		return
 	}
 
+	userIDQuery, ok := c.GetQuery("userId")
+	if !ok {
+		c.Status(http.StatusBadRequest)
+		c.Writer.WriteString("no userId in query")
+		return
+	}
+
 	page, err := strconv.Atoi(pageQuery)
 	if err != nil {
 		c.Status(http.StatusBadRequest)
@@ -114,13 +120,20 @@ func GetPage(c *gin.Context) {
 		return
 	}
 
+	userID, err := strconv.Atoi(userIDQuery)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		c.Writer.WriteString(err.Error())
+		return
+	}
+
 	getPostsReq := pb.GetPostsRequest{
-		UserID:   getUserID(c),
+		UserID:   uint64(userID),
 		Page:     uint32(page),
 		PageSize: uint32(pageSize),
 	}
 
-	resp, err := grpcclient.GRPCClient.GetPosts(context.Background(), &getPostsReq)
+	resp, err := grpcclient.PostService.GetPosts(context.Background(), &getPostsReq)
 	processServerResponse(c, err, resp)
 }
 

@@ -17,6 +17,8 @@ SIGNUP_HANDLER = "/user/signup"
 PROFILE_HANDLER = "/user/profile"
 POST_HANDLER = "/post"
 POST_PAGE_HANDLER = "/post/page"
+TOP3_USERS_HANDLER = "/stat/top3users"
+TOP5_POSTS_HANDLER = "/stat/top5posts"
 
 def wait_for_socket(host, port):
     retries = 10
@@ -315,6 +317,7 @@ class TestPost:
             posts.append(post)
 
         ((_, _), cookies) = user
+        userId = posts[0]['userID']
         r = make_requests(
             'GET',
             main_service_addr,
@@ -322,6 +325,7 @@ class TestPost:
             params={
                 'page': 0,
                 'pageSize': 5,
+                'userId': userId,
             },
             cookies=cookies
         )
@@ -336,6 +340,7 @@ class TestPost:
             params={
                 'page': 1,
                 'pageSize': 5,
+                'userId': userId,
             },
             cookies=cookies
         )
@@ -360,3 +365,103 @@ class TestPost:
             cookies=cookies
         )
         assert r.status_code == 403
+
+class TestStatistics:
+    @staticmethod
+    def test_like(main_service_addr, user_with_post):
+        (_, post) = user_with_post
+
+        for _ in range(5):
+            new_user = make_user(main_service_addr)
+            ((_, _), cookies) = new_user
+
+            for _ in range(3):
+                r = make_requests(
+                    'POST',
+                    main_service_addr,
+                    '/post/' + str(post['postID']) + '/like',
+                    cookies=cookies
+                )
+                assert r.status_code == 200
+
+        time.sleep(2)
+
+        r = make_requests(
+            'GET',
+            main_service_addr,
+            '/post/' + str(post['postID']) + '/stat',
+            cookies=cookies
+        )
+        assert r.status_code == 200
+        assert r.json()['postID'] == post['postID']
+        assert r.json()['likes'] == 5
+        assert r.json()['views'] == 0
+
+    @staticmethod
+    def test_view(main_service_addr, user_with_post):
+        (_, post) = user_with_post
+
+        for _ in range(5):
+            new_user = make_user(main_service_addr)
+            ((_, _), cookies) = new_user
+
+            for _ in range(3):
+                r = make_requests(
+                    'POST',
+                    main_service_addr,
+                    '/post/' + str(post['postID']) + '/view',
+                    cookies=cookies
+                )
+                assert r.status_code == 200
+
+        time.sleep(2)
+
+        r = make_requests(
+            'GET',
+            main_service_addr,
+            '/post/' + str(post['postID']) + '/stat',
+            cookies=cookies
+        )
+        assert r.status_code == 200
+        assert r.json()['postID'] == post['postID']
+        assert r.json()['likes'] == 0
+        assert r.json()['views'] == 5
+
+    @staticmethod
+    def test_top3_users(main_service_addr, user):
+        ((_, _), cookies) = user
+        r = make_requests(
+            'GET',
+            main_service_addr,
+            TOP3_USERS_HANDLER,
+            cookies=cookies
+        )
+        assert r.status_code == 200
+        assert len(r.json()) <= 3
+
+    @staticmethod
+    def test_top5_posts(main_service_addr, user):
+        ((_, _), cookies) = user
+        r = make_requests(
+            'GET',
+            main_service_addr,
+            TOP5_POSTS_HANDLER,
+            params={
+                'orderBy': 'views',
+            },
+            cookies=cookies
+        )
+        assert r.status_code == 200
+        assert len(r.json()) <= 5
+
+        r = make_requests(
+            'GET',
+            main_service_addr,
+            TOP5_POSTS_HANDLER,
+            params={
+                'orderBy': 'likes',
+            },
+            cookies=cookies
+        )
+        assert r.status_code == 200
+        assert len(r.json()) <= 5

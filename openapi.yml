@@ -131,7 +131,6 @@ paths:
   /post/{postId}:
     get:
       summary: Get post by id
-      description: This can only be done by the author of the post
       parameters:
         - name: postId
           in: path
@@ -147,7 +146,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Post'
         '400':
-          description: Invalid user or post id
+          description: Invalid post id
       security:
         - cookieAuth: []
     put:
@@ -205,6 +204,12 @@ paths:
           required: true
           schema:
             type: integer
+        - name: userId
+          in: query
+          description: user id
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
           description: Successful operation
@@ -215,6 +220,80 @@ paths:
                 items:
                   $ref: '#/components/schemas/Post'
         '400':
-          description: Invalid user or post id
+          description: Invalid post id
+      security:
+        - cookieAuth: []
+  /post/{postId}/like:
+    post:
+      summary: Like post by id
+      parameters:
+        - name: postId
+          in: path
+          description: post id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid post id
+      security:
+        - cookieAuth: []
+  /post/{postId}/view:
+    post:
+      summary: View post by id
+      parameters:
+        - name: postId
+          in: path
+          description: post id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid post id
+      security:
+        - cookieAuth: []
+  /post/{postId}/stat:
+    get:
+      summary: Get likes and views by post id
+      parameters:
+        - name: postId
+          in: path
+          description: post id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid post id
+      security:
+        - cookieAuth: []
+  /stat/top5posts:
+    get:
+      summary: Get top 5 posts by likes or views
+      parameters:
+        - name: orderBy
+          in: query
+          description: "likes" or "views"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+      security:
+        - cookieAuth: []
+  /stat/top3users:
+    get:
+      summary: Get top 3 users by likes
+      responses:
+        '200':
+          description: Successful operation
       security:
         - cookieAuth: []
